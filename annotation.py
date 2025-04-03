@@ -158,7 +158,7 @@ def annotate_sample_nist(sample_name, chromato, time_rn, chromato_cube, sigma, m
     Also writes a sample-specific CSV.
     """
     ref_peaks = pd.read_csv(ref_peaks_csv)
-    fame_peaks = ref_peaks.iloc[8:].reset_index(drop=True)
+    fame_peaks = ref_peaks.iloc[9:].reset_index(drop=True)
     
     results = []
     chromato_shape = chromato.shape  # (rows, cols)
