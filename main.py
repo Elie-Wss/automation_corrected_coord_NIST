@@ -24,10 +24,18 @@ def process_samples(directory, ref_peaks_csv, annotation_output_dir, pdf_output_
     
     # Define the canonical dictionary for hit selection.
     canonical_dict = {
-        "Alanine-d4": ["alanine-d4", "ala-d4"],
-        "Valine-d8": ["valine-d8", "val-d8"],
-        "Nicotinic acid-d4": ["nicotinic acid-d4", "nicotinic d4"],
-        # Add additional mappings as needed...
+        "Nonanoic acid, methyl esther C9": ["Nonanoic acid, methyl ester"],
+        "Decanoic acid, methyl ester C10": ["Decanoic acid, methyl ester"],
+        "Dodecanoic acid, methyl ester C12": ["Dodecanoic acid, methyl ester"],
+        "Methyl tetradecanoate C14":["Methyl tetradecanoate"],
+        "Hexadecanoic acid, methyl ester C16":["Hexadecanoic acid, methyl ester"],
+        "Methyl stearate C18":["Methyl stearate C18"],
+        "Eicosanoic acid, methyl ester C20":["Eicosanoic acid, methyl ester"],
+        "Docosanoic acid, methyl ester C22":["Docosanoic acid, methyl ester"],
+        "Tetracosanoic acid, methyl ester C24":["Tetracosanoic acid, methyl ester"]
+
+
+
     }
     
     all_annotations = []  # List to collect annotation DataFrames from all samples.
