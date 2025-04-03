@@ -282,3 +282,10 @@ def boolrelextrema(data, comparator, axis=0, order=1, mode='clip'):
             return results
     return results
 
+
+def read_spectrum_from_chromato_cube(pic_coord, chromato_cube):
+    #return spectra[pic_coord[1] * chromato.shape[0] + pic_coord[0]]
+    ms_from_chromato_cube = chromato_cube[:, pic_coord[0],pic_coord[1]]
+    #return np.linspace(range_min, range_max, range_max - range_min + 1).astype(int), ms_from_chromato_cube
+    return ms_from_chromato_cube
+
