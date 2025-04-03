@@ -190,7 +190,9 @@ def annotate_sample_nist(sample_name, chromato, time_rn, chromato_cube, sigma, m
                 'RT1_corrected': RT1_corr / 60,            # minutes
                 'RT2_corrected': RT2_corr,
                 'match_flag': match_flag,
-                'intensity_noise_ratio': intensity_noise_ratio
+                'intensity_noise_ratio': intensity_noise_ratio,
+                'NIST_Name': selected_hit.get('NIST_Name') if selected_hit else None,
+                'match_factor': selected_hit.get('match_factor') if selected_hit else None
             }
             if selected_hit:
                 for key, value in selected_hit.items():
