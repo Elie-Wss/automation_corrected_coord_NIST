@@ -1,4 +1,4 @@
-# annotation.py
+# annotation.py first draft
 import os
 import re
 import logging
