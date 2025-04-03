@@ -19,15 +19,19 @@ def generate_ref_peaks_pdf(chromato_cube, time_rn, sample_name,
       output_dir: Directory where the output PDF will be saved.
       mod_time: Modulation time for processing (passed to the visualizer).
     """
+    print(f"Inside generate_ref_peaks_pdf for sample: {sample_name}", flush=True)
+
     os.makedirs(output_dir, exist_ok=True)
     output_path = os.path.join(output_dir, f"{sample_name}_ref_peaks.pdf")
+    print(f"Generating PDF for sample '{sample_name}' at: {output_path}")
     
     # Load the reference peaks from CSV
     ref_peaks = pd.read_csv(ref_peaks_csv)
+    print(f"Loaded {len(ref_peaks)} reference peaks from {ref_peaks_csv}")
     
     # Create a multi-page PDF to save each plot
     with PdfPages(output_path) as pdf:
-        for _, row in ref_peaks.iterrows():
+        for i, (_, row) in enumerate(ref_peaks.iterrows(), start=1):
             m = int(row['mass'])
             RT1 = float(row['RT1']) * 60  # convert minutes to seconds
             RT2 = float(row['RT2'])
@@ -37,11 +41,9 @@ def generate_ref_peaks_pdf(chromato_cube, time_rn, sample_name,
             m_index = m - 39
             title = f"{name} | Mass: {m} | RT1: {RT1/60:.2f} min | RT2: {RT2:.3f} s"
             
-            print(f"📌 Plotting: {title}")
+            print(f"[{i}/{len(ref_peaks)}] Plotting: {title}")
             
-            # Call the visualizer function. Adjust the input as needed:
-            # Here we assume that visualizer accepts a tuple of (chromato, time_rn, chromato_cube)
-            # and other parameters to customize the plot.
+            # Call the visualizer function. Adjust the tuple as needed.
             visualizer(
                 (chromato_cube[m_index, :, :], time_rn, chromato_cube),
                 title=title,
@@ -51,11 +53,12 @@ def generate_ref_peaks_pdf(chromato_cube, time_rn, sample_name,
                 rt1_window=0.5,
                 rt2_window=0.2,
                 mod_time=mod_time,
-                show=False      # Do not display interactively
+                show=False      # Suppress interactive display
             )
             
             # Save the current figure to the PDF and close it
             pdf.savefig(plt.gcf())
             plt.close(plt.gcf())
+            print(f"Saved plot {i}/{len(ref_peaks)} to PDF")
     
     print(f"✅ PDF saved to:\n{output_path}")
