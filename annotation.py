@@ -24,59 +24,76 @@ def ensure_pyms_nist_container_clean():
         container = client.containers.get("pyms-nist-server")
         if container.status == "exited":
             print("🧹 Removing existing stopped container: pyms-nist-server", flush=True)
-            container.remove()
-        else:
-            print("✅ pyms-nist-server is already running.", flush=True)
+            container.remove(force=True)
     except docker.errors.NotFound:
         pass  # Container doesn't exist
-
 # -------------------------------
 # Helper: Coordinate Correction
 # -------------------------------
 def correct_coordinates(chromato_cube, chromato, time_rn, mod_time, ref_row, chromato_shape):
-    """
-    For a given reference peak (ref_row), perform a local maxima search to correct RT coordinates.
-    Returns:
-      (RT1_corrected, RT2_corrected, theoretical_coord)
-    """
+    name = ref_row['Mol']
+    mass = int(ref_row['mass'])
     RT1 = float(ref_row['RT1']) * 60  # seconds
     RT2 = float(ref_row['RT2'])
-    # Convert theoretical RT to matrix coordinate
     u1 = chromato_to_matrix(np.array([[RT1 / 60, RT2]]), time_rn, mod_time, chromato_shape)
     theoretical_coord = u1[0]
     
-    # Define search window in matrix coordinates
     rt1_window = 0.5  # minutes
     rt2_window = 0.2  # seconds
+    # Define window in matrix coords
     window = chromato_to_matrix(
-        np.array([[RT1/60 - rt1_window, RT2 - rt2_window],
-                  [RT1/60 + rt1_window, RT2 + rt2_window]]),
+        np.array([
+            [RT1/60 - rt1_window, RT2 - rt2_window],
+            [RT1/60 + rt1_window, RT2 + rt2_window]
+        ]),
         time_rn,
-        mod_time,
-        chromato_shape
+        1.25,
+        chromato.shape
     )
-    
-    x_min, y_min = np.maximum(window[0], 0)
-    x_max, y_max = np.minimum(window[1], np.array(chromato_shape))
-    
-    m_index = int(ref_row['mass']) - 39
-    submatrix = chromato_cube[m_index, int(x_min):int(x_max), int(y_min):int(y_max)]
+
+    print("Window:", window, flush=True)
+    print("Window shape:", window.shape, flush=True)
+    print("window[0] type:", type(window[0]), "value:", window[0], flush=True)
+    print("window[1] type:", type(window[1]), "value:", window[1], flush=True)
+
+    # Explicitly extract scalar integer values:
+    # Extract scalar bounds from the 2x2 window array explicitly:
+    # After computing and printing the window...
+    x_min = int(max(float(window[0][0]), 0))
+    y_min = int(max(float(window[0][1]), 0))
+    x_max = int(min(float(window[1][0]), float(chromato.shape[0])))
+    y_max = int(min(float(window[1][1]), float(chromato.shape[1])))
+    print("Extracted window values (as ints):", x_min, y_min, x_max, y_max, flush=True)
+    print("Final indices:", x_min, y_min, x_max, y_max, flush=True)
+    print("Types:", type(x_min), type(y_min), type(x_max), type(y_max), flush=True)
+
+    mass_index = int(mass) - 39
+    i_x_min = int(x_min)
+    i_y_min = int(y_min)
+    i_x_max = int(x_max)
+    i_y_max = int(y_max)
+    print("Explicit indices:", mass_index, i_x_min, i_x_max, i_y_min, i_y_max, flush=True)
+
+    # Now slice using these explicitly converted integers
+    submatrix = chromato_cube[mass_index, i_x_min:i_x_max, i_y_min:i_y_max]
     local_max_coords = peak_local_max(submatrix, num_peaks=1)
-    
+
+
+
+        
     if len(local_max_coords) > 0:
         peak_x, peak_y = local_max_coords[0]
-        global_x = int(x_min) + peak_x
-        global_y = int(y_min) + peak_y
+        global_x = int(i_x_min) + peak_x
+        global_y = int(i_y_min) + peak_y
         coord = [global_x, global_y]
         rt_corr = matrix_to_chromato(np.array([coord]), time_rn, mod_time, chromato_shape)[0]
         RT1_corr = rt_corr[0] * 60  # seconds
         RT2_corr = rt_corr[1]
+        return RT1_corr, RT2_corr, coord  # Return the corrected matrix coordinate
     else:
         print(f"⚠️ No local max found near {ref_row['Mol']}, using theoretical RT", flush=True)
-        RT1_corr, RT2_corr = RT1, RT2
-        coord = theoretical_coord
-        
-    return RT1_corr, RT2_corr, theoretical_coord
+        return RT1, RT2, theoretical_coord
+
 
 # -------------------------------
 # Helper: Spectrum Extraction & NIST Search
@@ -170,13 +187,13 @@ def annotate_sample_nist(sample_name, chromato, time_rn, chromato_cube, sigma, m
             RT2_theoretical = float(row['RT2'])
             print(f"🔍 Processing reference peak {idx+1}/{len(fame_peaks)}: {name}", flush=True)
             
-            RT1_corr, RT2_corr, _ = correct_coordinates(chromato_cube, chromato, time_rn, 1.25, row, chromato_shape)
+            RT1_corr, RT2_corr, corrected_coord = correct_coordinates(chromato_cube, chromato, time_rn, 1.25, row, chromato_shape)
             # Use the corrected RT values as the coordinate for spectrum extraction (adjust if needed)
-            corrected_coord = [RT1_corr, RT2_corr]
+            
             
             nist_results = run_nist_annotation(chromato_cube, time_rn, chromato_shape,
-                                               theoretical_mass, corrected_coord, mass_range,
-                                               search_engine, n_hits=50)
+                                   theoretical_mass, corrected_coord, mass_range,
+                                   search_engine, n_hits=50)
             selected_hit, match_flag = select_nist_hit(nist_results, canonical_dict)
             int_values = read_spectrum_from_chromato_cube(corrected_coord, chromato_cube=chromato_cube)
             intensity_noise_ratio = compute_intensity_noise_ratio(int_values, sigma)

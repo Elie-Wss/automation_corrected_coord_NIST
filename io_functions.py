@@ -166,7 +166,7 @@ def estimate_sigma(image, average_sigmas=False, *, channel_axis=None):
             f'but channel_axis is None. If this is a color image, '
             f'please set channel_axis=-1 for proper noise estimation.'
         )
-        warn(msg)
+        warnings(msg)
     coeffs = pywt.dwtn(image, wavelet='db2')
     detail_coeffs = coeffs['d' * image.ndim]
     return sigma_est_dwt(detail_coeffs, distribution='Gaussian')
