@@ -223,10 +223,6 @@ def annotate_sample_nist(sample_name, chromato, time_rn, chromato_cube, sigma, m
     
     if results:
         final_df = pd.DataFrame(results)
-        os.makedirs(output_dir, exist_ok=True)
-        out_csv = os.path.join(output_dir, f"{sample_name}_fame_nist_corrected.csv")
-        final_df.to_csv(out_csv, index=False)
-        print(f"✅ CSV saved for sample {sample_name}: {out_csv}", flush=True)
         return final_df
     else:
         print("⚠️ No results to write for sample:", sample_name, flush=True)

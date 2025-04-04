@@ -3,6 +3,7 @@ import os
 import argparse
 from io_functions import read_chromato_and_chromato_cube
 from pdf_generation import generate_ref_peaks_pdf
+import pandas as pd
 from annotation import (
     annotate_sample_nist,
     ensure_pyms_nist_container_clean
@@ -71,14 +72,13 @@ def process_samples(directory, ref_peaks_csv, annotation_output_dir, pdf_output_
     
     # Aggregate annotation DataFrames from all samples into one master CSV.
     if all_annotations:
-        master_df = all_annotations[0].copy()
-        for df in all_annotations[1:]:
-            master_df = master_df.append(df, ignore_index=True)
+        master_df = pd.concat(all_annotations, ignore_index=True)
         master_csv = os.path.join(annotation_output_dir, "master_nist_annotations.csv")
         master_df.to_csv(master_csv, index=False)
-        print(f"✅ Master CSV saved: {master_csv}")
+        print(f"✅ Master CSV saved: {master_csv}", flush=True)
     else:
         print("No annotations generated from any sample.")
+
 
 def main():
     parser = argparse.ArgumentParser(
