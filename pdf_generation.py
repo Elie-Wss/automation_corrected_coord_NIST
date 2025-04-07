@@ -28,11 +28,12 @@ def generate_ref_peaks_pdf(chromato_cube, time_rn, sample_name,
     
         # Load the reference peaks from CSV
         ref_peaks = pd.read_csv(ref_peaks_csv)
-        print(f"Loaded {len(ref_peaks)} reference peaks from {ref_peaks_csv}", flush=True)
+        fame_peaks = ref_peaks.iloc[9:].reset_index(drop=True)
+        print(f"Loaded {len(fame_peaks)} FAME peaks from {ref_peaks_csv}", flush=True)
     
         # Create a multi-page PDF to save each plot
         with PdfPages(output_path) as pdf:
-            for i, (_, row) in enumerate(ref_peaks.iterrows(), start=1):
+            for i, (_, row) in enumerate(fame_peaks.iterrows(), start=1):
                 try:
                     m = int(row['mass'])
                     RT1 = float(row['RT1']) * 60  # convert minutes to seconds
@@ -61,7 +62,7 @@ def generate_ref_peaks_pdf(chromato_cube, time_rn, sample_name,
                     # Save the current figure to the PDF and close it
                     pdf.savefig(plt.gcf())
                     plt.close(plt.gcf())
-                    print(f"Saved plot {i}/{len(ref_peaks)} to PDF", flush=True)
+                    print(f"Saved plot {i}/{len(fame_peaks)} to PDF", flush=True)
                 except Exception as e:
                     print(f"Error while plotting reference peak at index {i}: {e}", flush=True)
         print(f"✅ PDF saved to:\n{output_path}", flush=True)
