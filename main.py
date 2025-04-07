@@ -17,7 +17,7 @@ canonical_dict = {
         "Dodecanoic acid, methyl ester C12": ["Dodecanoic acid, methyl ester"],
         "Methyl tetradecanoate C14":["Methyl tetradecanoate"],
         "Hexadecanoic acid, methyl ester C16":["Hexadecanoic acid, methyl ester"],
-        "Methyl stearate C18":["Methyl stearate C18"],
+        "Methyl stearate C18":["Methyl stearate"],
         "Eicosanoic acid, methyl ester C20":["Eicosanoic acid, methyl ester"],
         "Docosanoic acid, methyl ester C22":["Docosanoic acid, methyl ester"],
         "Tetracosanoic acid, methyl ester C24":["Tetracosanoic acid, methyl ester"]
