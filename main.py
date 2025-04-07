@@ -6,7 +6,8 @@ from pdf_generation import generate_ref_peaks_pdf
 import pandas as pd
 from annotation import (
     annotate_sample_nist,
-    ensure_pyms_nist_container_clean
+    ensure_pyms_nist_container_clean,
+    compute_final_match_flag
 )
 import pyms_nist_search
 
@@ -73,6 +74,7 @@ def process_samples(directory, ref_peaks_csv, annotation_output_dir, pdf_output_
     # Aggregate annotation DataFrames from all samples into one master CSV.
     if all_annotations:
         master_df = pd.concat(all_annotations, ignore_index=True)
+        master_df["final_match_flag"] = master_df.apply(compute_final_match_flag, axis=1)
         master_csv = os.path.join(annotation_output_dir, "master_nist_annotations.csv")
         master_df.to_csv(master_csv, index=False)
         print(f"✅ Master CSV saved: {master_csv}", flush=True)
