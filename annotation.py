@@ -163,13 +163,4 @@ def annotate_sample_nist(sample_name, chromato, time_rn, chromato_cube, sigma, m
         print("⚠️ No results to write for sample:", sample_name, flush=True)
         return None
     
-def compute_final_match_flag(row):
-    """
-    Compute the final match flag for a given row.
-    Uses the stored NIST_0 field and the molecule name.
-    """
-    mol = row["Mol"]
-    nist_name = str(row.get("NIST_0", "")).lower().strip()
-    variations = canonical_dict.get(mol, [])
-    return 1 if any(variation.lower().strip() in nist_name for variation in variations) else 0   
 

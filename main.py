@@ -7,9 +7,35 @@ import pandas as pd
 from annotation import (
     annotate_sample_nist,
     ensure_pyms_nist_container_clean,
-    compute_final_match_flag
+    
 )
 import pyms_nist_search
+
+canonical_dict = {
+        "Nonanoic acid, methyl esther C9": ["Nonanoic acid, methyl ester"],
+        "Decanoic acid, methyl ester C10": ["Decanoic acid, methyl ester"],
+        "Dodecanoic acid, methyl ester C12": ["Dodecanoic acid, methyl ester"],
+        "Methyl tetradecanoate C14":["Methyl tetradecanoate"],
+        "Hexadecanoic acid, methyl ester C16":["Hexadecanoic acid, methyl ester"],
+        "Methyl stearate C18":["Methyl stearate C18"],
+        "Eicosanoic acid, methyl ester C20":["Eicosanoic acid, methyl ester"],
+        "Docosanoic acid, methyl ester C22":["Docosanoic acid, methyl ester"],
+        "Tetracosanoic acid, methyl ester C24":["Tetracosanoic acid, methyl ester"]
+
+
+
+    }
+
+def compute_final_match_flag(row):
+    """
+    Compute the final match flag for a given row.
+    Uses the stored NIST_0 field and the molecule name.
+    """
+    mol = row["Mol"]
+    nist_name = str(row.get("NIST_0", "")).lower().strip()
+    variations = canonical_dict.get(mol, [])
+    return 1 if any(variation.lower().strip() in nist_name for variation in variations) else 0   
+
 
 def process_samples(directory, ref_peaks_csv, annotation_output_dir, pdf_output_dir, mod_time=1.25, pre_process=True):
     # Ensure the output directories exist.
@@ -25,20 +51,7 @@ def process_samples(directory, ref_peaks_csv, annotation_output_dir, pdf_output_
     )
     
     # Define the canonical dictionary for hit selection.
-    canonical_dict = {
-        "Nonanoic acid, methyl esther C9": ["Nonanoic acid, methyl ester"],
-        "Decanoic acid, methyl ester C10": ["Decanoic acid, methyl ester"],
-        "Dodecanoic acid, methyl ester C12": ["Dodecanoic acid, methyl ester"],
-        "Methyl tetradecanoate C14":["Methyl tetradecanoate"],
-        "Hexadecanoic acid, methyl ester C16":["Hexadecanoic acid, methyl ester"],
-        "Methyl stearate C18":["Methyl stearate C18"],
-        "Eicosanoic acid, methyl ester C20":["Eicosanoic acid, methyl ester"],
-        "Docosanoic acid, methyl ester C22":["Docosanoic acid, methyl ester"],
-        "Tetracosanoic acid, methyl ester C24":["Tetracosanoic acid, methyl ester"]
-
-
-
-    }
+   
     
     all_annotations = []  # List to collect annotation DataFrames from all samples.
     
